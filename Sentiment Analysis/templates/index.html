@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Social Media Sentiment Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>AI Social Media Sentiment Dashboard</h1>
+    <hr>
+
+    <!-- Input Section -->
+    <div class="input-box">
+        <form action="/predict" method="POST">
+            <label>Select Platform</label>
+            <select name="platform" required>
+                <option value="">Choose Platform</option>
+                <option value="YouTube">YouTube</option>
+                <option value="Instagram">Instagram</option>
+                <option value="Facebook">Facebook</option>
+            </select>
+
+            <label>Enter Comment</label>
+            <textarea name="sentence" rows="6" placeholder="Type your comment here..." required>
+                {{ sentence if sentence else "" }}
+            </textarea>
+
+            <button type="submit">Analyze Sentiment</button>
+        </form>
+    </div>
+
+    <!-- Prediction Result -->
+    <div class="prediction">
+        <h2>Prediction Result</h2>
+        {% if prediction %}
+            <div class="badge {{ prediction|lower }}">
+                {{ prediction }}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Current Sentence Sentiment -->
+    <div class="current-sentence-box">
+        <h2>Current Sentence Sentiment</h2>
+        {% if sentence %}
+            <p><strong>Comment:</strong> {{ sentence }}</p>
+            <p><strong>Sentiment:</strong>
+                <span class="badge {{ prediction|lower }}">
+                    {{ prediction }}
+                </span>
+            </p>
+        {% else %}
+            <p>No comment analyzed yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Analytics Cards -->
+    <div class="cards">
+        <div class="card">
+            <h3>Total Comments</h3>
+            <h2>{{ total_comments }}</h2>
+        </div>
+        <div class="card positive-card">
+            <h3>Positive</h3>
+            <h2>{{ total_positive }}</h2>
+        </div>
+        <div class="card negative-card">
+            <h3>Negative</h3>
+            <h2>{{ total_negative }}</h2>
+        </div>
+    </div>
+
+    <!-- Progress Bars -->
+    <div class="progress-section">
+        <h2>Platform Analytics</h2>
+        <div class="progress-box">
+            <label>YouTube</label>
+            <progress value="{{ youtube_percent }}" max="100"></progress>
+            <span>{{ youtube_percent }}%</span>
+        </div>
+        <div class="progress-box">
+            <label>Instagram</label>
+            <progress value="{{ instagram_percent }}" max="100"></progress>
+            <span>{{ instagram_percent }}%</span>
+        </div>
+        <div class="progress-box">
+            <label>Facebook</label>
+            <progress value="{{ facebook_percent }}" max="100"></progress>
+            <span>{{ facebook_percent }}%</span>
+        </div>
+    </div>
+
+    <!-- Prediction History -->
+    <div class="history">
+        <h2>Prediction History</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Platform</th>
+                    <th>Comment</th>
+                    <th>Prediction</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in history %}
+                <tr>
+                    <td>{{ item.Platform }}</td>
+                    <td>{{ item.Comment }}</td>
+                    <td>
+                        <span class="badge {{ item.Prediction|lower }}">
+                            {{ item.Prediction }}
+                        </span>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Sentiment Chart -->
+    <div class="chart-container">
+        <h2>Platform Sentiment Overview</h2>
+        <canvas id="sentimentChart"></canvas>
+    </div>
+
+</div>
+
+<!-- Chart.js -->
+<script>
+const ctx = document.getElementById('sentimentChart');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['YouTube', 'Instagram', 'Facebook'],
+        datasets: [{
+            label: 'Positive Percentage',
+            data: [{{ youtube_percent }}, {{ instagram_percent }}, {{ facebook_percent }}],
+            backgroundColor: ['#4caf50', '#2196f3', '#ff9800'],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+</script>
+
+</body>
+</html>
